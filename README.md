@@ -1,12 +1,8 @@
 # Deduction guides for `std::unique_ptr`
 
 [deduction_guides.h](deduction_guides.h) &mdash; deduction guides with some helper metafunctions.
+[examples.cpp](examples.cpp) &mdash; examples on how it is meant to be used.
 
-[test.cpp](test.cpp) &mdash; compile time tests.
-
-### Notes
-* New customization point `template<class> constexpr bool deleter_applicable_to_array` introduced. By default it is equal to `true` for `default_delete<T[]>` and is equal to `false` for everything else. It is necessary for deducing first template argument of `unique_ptr` as `T[]`. Possible alternative is to require from deleters inner typedef `applicable_to_array` (similarly to `is_transparent` for comparators).
-* Deleter type is never deduced as a reference except for function types.
-* For the deduced type `UP` following invariant holds
-  * type `UP::deleter_type::pointer` is ill formed or
-  * `is_same<UP::element_type, pointer_traits<UP::deleter_type::pointer>::element_type`>.
+## How it works
+If you provide a deleter, the compiler trusts you that you provided the right deleter and sets the type of the unique ptr either the type of the pointer or the type of the first argument of the deleter.
+No deduction is provided if no deleter is given (i.e `std::unique_ptr{ new Foo{} };` and `std::unique_ptr{ new Foo[N]{} }`). It will give a compile-time error, because you cannot make a difference between a pointer and a C array - both are pointers. So use `std::make_unique<Foo>()` instead.
